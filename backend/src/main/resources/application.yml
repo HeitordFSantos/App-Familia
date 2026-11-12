@@ -20,3 +20,18 @@ app:
     client-id: ${GOOGLE_CLIENT_ID:}
   convite:
     validade-dias: 7
+  # Modelo de linguagem, em qualquer servidor compatível com a API de chat da OpenAI.
+  # Ollama no próprio computador: LLM_URL=http://localhost:11434/v1 (a chave fica vazia).
+  llm:
+    url: ${LLM_URL:}
+    chave: ${LLM_CHAVE:}
+    modelo: ${LLM_MODELO:llama3.2}
+    modelo-visao: ${LLM_MODELO_VISAO:llama3.2-vision}
+  # Instância do SearXNG para as referências do devocional. Vazio = sem pesquisa.
+  pesquisa:
+    url: ${PESQUISA_URL:}
+  # Texto bíblico licenciado pela API.Bible. Vazio = devocional só com a referência.
+  biblia:
+    url: ${BIBLIA_API_URL:https://rest.api.bible/v1}
+    chave: ${BIBLIA_API_CHAVE:}
+    versao: ${BIBLIA_API_VERSAO:}
