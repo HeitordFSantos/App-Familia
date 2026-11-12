@@ -1,7 +1,43 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.INTERNET" />
+
+    <!-- Lembretes da agenda -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission
+        android:name="android.permission.SCHEDULE_EXACT_ALARM"
+        android:maxSdkVersion="32" />
+    <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
+
+    <!-- Bloqueio no horário do devocional -->
+    <uses-permission
+        android:name="android.permission.PACKAGE_USAGE_STATS"
+        tools:ignore="ProtectedPermissions" />
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+
+    <!-- Aplicativos que a tela do devocional verifica se estão instalados -->
+    <queries>
+        <package android:name="com.instagram.android" />
+        <package android:name="com.facebook.katana" />
+        <package android:name="com.facebook.lite" />
+        <package android:name="com.zhiliaoapp.musically" />
+        <package android:name="com.zhiliaoapp.musically.go" />
+        <package android:name="com.twitter.android" />
+        <package android:name="com.google.android.youtube" />
+        <package android:name="com.instagram.barcelona" />
+        <package android:name="com.kwai.video" />
+        <package android:name="com.snapchat.android" />
+        <package android:name="com.pinterest" />
+        <package android:name="com.reddit.frontpage" />
+        <package android:name="com.whatsapp" />
+        <package android:name="org.telegram.messenger" />
+        <package android:name="com.facebook.orca" />
+    </queries>
 
     <!-- usesCleartextTraffic permite http:// durante o desenvolvimento (backend no computador).
          Antes de publicar, o backend deve usar https e esta opção deve sair. -->
@@ -31,6 +67,37 @@
 
         <activity
             android:name=".feature.dependentes.DependentesActivity"
-            android:label="Filhos" />
+            android:label="Filhos e vacinas" />
+
+        <activity android:name=".feature.vacinas.VacinasActivity" />
+        <activity android:name=".feature.agenda.AgendaActivity" />
+        <activity android:name=".feature.compras.ComprasActivity" />
+        <activity android:name=".feature.financas.FinancasActivity" />
+        <activity android:name=".feature.devocional.DevocionalActivity" />
+
+        <receiver
+            android:name=".feature.agenda.LembreteReceiver"
+            android:exported="false" />
+
+        <receiver
+            android:name=".feature.devocional.DevocionalReceiver"
+            android:exported="false" />
+
+        <receiver
+            android:name=".core.BootReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+
+        <service
+            android:name=".feature.devocional.BloqueioService"
+            android:exported="false"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Bloqueio de aplicativos escolhido pelo usuário em um horário definido por ele" />
+        </service>
     </application>
 </manifest>

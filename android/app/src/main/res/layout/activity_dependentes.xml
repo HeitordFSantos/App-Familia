@@ -17,7 +17,7 @@
         android:layout_gravity="center"
         android:gravity="center"
         android:padding="32dp"
-        android:text="Nenhum filho cadastrado.\nA data de nascimento é a base da agenda vacinal."
+        android:text="Nenhum filho cadastrado.\nDepois de cadastrar, toque no nome para ver as vacinas; segure para remover."
         android:textAppearance="?attr/textAppearanceBodyLarge" />
 
     <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton

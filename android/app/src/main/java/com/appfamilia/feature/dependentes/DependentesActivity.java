@@ -1,5 +1,6 @@
 package com.appfamilia.feature.dependentes;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -13,6 +14,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.appfamilia.R;
 import com.appfamilia.core.rede.Modelos;
+import com.appfamilia.feature.vacinas.VacinasActivity;
 import com.google.android.material.datepicker.CalendarConstraints;
 import com.google.android.material.datepicker.DateValidatorPointBackward;
 import com.google.android.material.datepicker.MaterialDatePicker;
@@ -35,7 +37,7 @@ public class DependentesActivity extends AppCompatActivity {
         setContentView(R.layout.activity_dependentes);
         viewModel = new ViewModelProvider(this).get(DependentesViewModel.class);
 
-        DependenteAdapter adapter = new DependenteAdapter(this::confirmarRemocao);
+        DependenteAdapter adapter = new DependenteAdapter(this::abrirVacinas, this::confirmarRemocao);
         RecyclerView lista = findViewById(R.id.lista);
         lista.setLayoutManager(new LinearLayoutManager(this));
         lista.setAdapter(adapter);
@@ -96,6 +98,12 @@ public class DependentesActivity extends AppCompatActivity {
             botao.setText("Nascimento: " + DependenteAdapter.dataBr(dataEscolhida));
         });
         seletor.show(getSupportFragmentManager(), "data_nascimento");
+    }
+
+    private void abrirVacinas(Modelos.Dependente dependente) {
+        startActivity(new Intent(this, VacinasActivity.class)
+                .putExtra(VacinasActivity.EXTRA_ID, dependente.id)
+                .putExtra(VacinasActivity.EXTRA_NOME, dependente.nome));
     }
 
     private void confirmarRemocao(Modelos.Dependente dependente) {

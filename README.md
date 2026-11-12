@@ -12,17 +12,19 @@ App-Familia/
 
 ## Estado atual
 
-| Etapa | Situação |
-|---|---|
-| Núcleo: Casa, Membro, Dependente, Convite | Pronto |
-| Login por e-mail e senha | Pronto |
-| Login com Google (lado do servidor) | Pronto; falta configurar o client-id |
-| App Android: login, cadastro, início, filhos, convite | Pronto |
-| Agenda e compromissos | A fazer |
-| Agenda vacinal | A fazer |
-| Bloqueio para o devocional | A fazer |
-| Lista de compras por foto | A fazer |
-| Finanças | A fazer |
+| Módulo | Situação | O que falta |
+|---|---|---|
+| Núcleo: Casa, membros, filhos, convite | Pronto | Envio do convite por e-mail |
+| Login por e-mail e senha | Pronto | |
+| Login com Google | Código pronto | Criar as credenciais no Google Cloud Console |
+| Agenda e compromissos | Pronto | Editar compromisso (hoje é remover e criar de novo) |
+| Agenda vacinal | Pronto | Revisar o calendário a cada atualização do Ministério da Saúde |
+| Lista de compras | Lista manual compartilhada pronta | Criar itens a partir de foto (precisa de uma API de visão) |
+| Finanças | Lançamento manual e resumo mensal prontos | Ligação com banco via Open Finance (precisa de um agregador) |
+| Horário do devocional | Bloqueio no Android pronto | Validar em aparelho, principalmente Xiaomi/HyperOS |
+
+Tudo o que está marcado como pronto passa nos testes automáticos do backend e compila no app.
+O comportamento do app em um aparelho real ainda precisa ser validado.
 
 ## Backend
 
@@ -64,6 +66,20 @@ mvn test
 | POST | `/api/dependentes` | logado | Cadastra um filho |
 | DELETE | `/api/dependentes/{id}` | logado | Remove um filho |
 | POST | `/api/convites` | ADMIN | Gera convite para outro adulto |
+| GET | `/api/compromissos?de=AAAA-MM-DD` | logado | Compromissos a partir de uma data (padrão: hoje) |
+| POST | `/api/compromissos` | logado | Cria compromisso, com lembrete e filho opcionais |
+| DELETE | `/api/compromissos/{id}` | logado | Remove um compromisso |
+| GET | `/api/dependentes/{id}/vacinas` | logado | Agenda vacinal do filho, com a situação de cada dose |
+| PUT | `/api/dependentes/{id}/vacinas/{codigo}` | logado | Marca uma dose como aplicada |
+| DELETE | `/api/dependentes/{id}/vacinas/{codigo}` | logado | Desmarca uma dose |
+| GET | `/api/compras` | logado | Lista de compras |
+| POST | `/api/compras` | logado | Adiciona item |
+| PUT | `/api/compras/{id}/comprado` | logado | Marca ou desmarca como comprado |
+| DELETE | `/api/compras/comprados` | logado | Remove todos os itens já comprados |
+| DELETE | `/api/compras/{id}` | logado | Remove um item |
+| GET | `/api/lancamentos?mes=AAAA-MM` | logado | Lançamentos e totais do mês |
+| POST | `/api/lancamentos` | logado | Cria receita ou despesa (valor em centavos) |
+| DELETE | `/api/lancamentos/{id}` | logado | Remove um lançamento |
 
 Os endpoints de login devolvem um `token`. Nas demais chamadas, envie o cabeçalho `Authorization: Bearer <token>`.
 
@@ -77,10 +93,21 @@ com.appfamilia
 │   ├── membro/       adultos com login
 │   ├── dependente/   filhos, sem login
 │   └── convite/      entrada de um segundo adulto na Casa
+├── agenda/           compromissos
+├── vacinas/          calendário vacinal e doses aplicadas
+├── compras/          lista de compras
+├── financas/         receitas e despesas
 └── shared/
     ├── seguranca/    configuração do Spring Security e usuário logado
     └── erro/         formato único de erro
 ```
+
+### Agenda vacinal
+
+As doses ficam em `vacinas/CalendarioVacinal.java`, com base no Calendário Nacional de Vacinação da
+criança (Ministério da Saúde, versão de 30/01/2026) mais o 2º reforço da VIP aos 4 anos. É uma
+referência para lembrar a família; quem define o que aplicar é a unidade de saúde. Ao atualizar o
+calendário, mantenha os códigos das doses existentes, porque os registros de aplicação apontam para eles.
 
 Regras que valem para todo módulo novo:
 
@@ -123,8 +150,27 @@ com.appfamilia
 ├── core/
 │   ├── Sessao.java     token, usuário e endereço do servidor
 │   └── rede/           Retrofit, modelos e tratamento de erro
+│   ├── ui/             base das telas de lista
+│   └── Alarmes, Formatos, BootReceiver
 └── feature/
     ├── auth/           login, cadastro, Google
     ├── inicio/         tela inicial e convite
-    └── dependentes/    filhos
+    ├── dependentes/    filhos
+    ├── vacinas/        agenda vacinal de cada filho
+    ├── agenda/         compromissos e lembretes por notificação
+    ├── compras/        lista de compras
+    ├── financas/       receitas e despesas do mês
+    └── devocional/     bloqueio de aplicativos em horário definido
 ```
+
+### Horário do devocional
+
+Funciona só no aparelho, sem passar pelo backend. No horário configurado, um serviço confere qual
+aplicativo está aberto e cobre os bloqueados com um aviso. Precisa de duas permissões, pedidas na
+própria tela: **acesso de uso** e **sobrepor a outros apps**. Em aparelhos Xiaomi, ative também o
+início automático do app e deixe a economia de bateria sem restrições, senão o sistema encerra o serviço.
+
+### Lembretes da agenda
+
+São notificações locais agendadas no aparelho quando a agenda é aberta. Um compromisso criado por
+outra pessoa da Casa só gera lembrete no seu aparelho depois que você abrir a agenda.

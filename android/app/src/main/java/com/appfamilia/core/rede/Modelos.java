@@ -8,6 +8,8 @@ public final class Modelos {
     private Modelos() {
     }
 
+    // ----- Autenticação e núcleo -----
+
     public static class Cadastro {
         public String nome;
         public String email;
@@ -82,5 +84,83 @@ public final class Modelos {
 
     public static class Erro {
         public String erro;
+    }
+
+    // ----- Agenda -----
+
+    public static class Compromisso {
+        public String id;
+        public String titulo;
+        public String descricao;
+        /** Data e hora locais, formato AAAA-MM-DDTHH:MM:SS. */
+        public String inicio;
+        /** Minutos antes do início; nulo = sem lembrete. */
+        public Integer lembreteMinutos;
+        public String dependenteId;
+    }
+
+    // ----- Vacinas -----
+
+    public static class DoseVacina {
+        public String codigo;
+        public String vacina;
+        public String dose;
+        public int idadeMeses;
+        public String observacao;
+        public String dataPrevista;
+        /** APLICADA, PENDENTE, PROXIMA ou FUTURA. */
+        public String situacao;
+        public String aplicadaEm;
+    }
+
+    public static class Aplicacao {
+        public String aplicadaEm;
+
+        public Aplicacao(String aplicadaEm) {
+            this.aplicadaEm = aplicadaEm;
+        }
+    }
+
+    // ----- Compras -----
+
+    public static class ItemCompra {
+        public String id;
+        public String nome;
+        public String quantidade;
+        public boolean comprado;
+
+        public ItemCompra(String nome, String quantidade) {
+            this.nome = nome;
+            this.quantidade = quantidade;
+        }
+    }
+
+    public static class Comprado {
+        public boolean comprado;
+
+        public Comprado(boolean comprado) {
+            this.comprado = comprado;
+        }
+    }
+
+    // ----- Finanças -----
+
+    public static class Lancamento {
+        public String id;
+        /** RECEITA ou DESPESA. */
+        public String tipo;
+        public long valorCentavos;
+        public String categoria;
+        public String descricao;
+        /** Formato AAAA-MM-DD. */
+        public String data;
+    }
+
+    public static class ResumoMes {
+        public String mes;
+        public long receitasCentavos;
+        public long despesasCentavos;
+        public long saldoCentavos;
+        public List<Lancamento> itens;
     }
 }

@@ -23,6 +23,41 @@
             android:layout_marginTop="4dp"
             android:textAppearance="?attr/textAppearanceTitleMedium" />
 
+        <Button
+            android:id="@+id/botao_agenda"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:text="Agenda e compromissos" />
+
+        <Button
+            android:id="@+id/botao_filhos"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="Filhos e vacinas" />
+
+        <Button
+            android:id="@+id/botao_compras"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="Lista de compras" />
+
+        <Button
+            android:id="@+id/botao_financas"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="Finanças" />
+
+        <Button
+            android:id="@+id/botao_devocional"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="Horário do devocional" />
+
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -39,13 +74,6 @@
             android:textAppearance="?attr/textAppearanceBodyLarge" />
 
         <Button
-            android:id="@+id/botao_filhos"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
-            android:text="Filhos" />
-
-        <Button
             android:id="@+id/botao_convidar"
             style="@style/Widget.Material3.Button.TonalButton"
             android:layout_width="match_parent"
@@ -53,26 +81,12 @@
             android:layout_marginTop="8dp"
             android:text="Convidar adulto" />
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
-            android:text="Em construção"
-            android:textAppearance="?attr/textAppearanceLabelLarge" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:text="Agenda e compromissos\nAgenda vacinal\nHorário do devocional\nLista de compras por foto\nFinanças"
-            android:textAppearance="?attr/textAppearanceBodyMedium" />
-
         <Button
             android:id="@+id/botao_sair"
             style="@style/Widget.Material3.Button.TextButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="32dp"
+            android:layout_marginTop="24dp"
             android:text="Sair" />
     </LinearLayout>
 </ScrollView>

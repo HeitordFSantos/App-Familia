@@ -14,14 +14,16 @@ import java.util.List;
 
 public class DependenteAdapter extends RecyclerView.Adapter<DependenteAdapter.Linha> {
 
-    public interface AoSegurar {
-        void segurou(Modelos.Dependente dependente);
+    public interface Acao {
+        void em(Modelos.Dependente dependente);
     }
 
     private final List<Modelos.Dependente> itens = new ArrayList<>();
-    private final AoSegurar aoSegurar;
+    private final Acao aoTocar;
+    private final Acao aoSegurar;
 
-    public DependenteAdapter(AoSegurar aoSegurar) {
+    public DependenteAdapter(Acao aoTocar, Acao aoSegurar) {
+        this.aoTocar = aoTocar;
         this.aoSegurar = aoSegurar;
     }
 
@@ -43,8 +45,9 @@ public class DependenteAdapter extends RecyclerView.Adapter<DependenteAdapter.Li
         Modelos.Dependente dependente = itens.get(posicao);
         linha.nome.setText(dependente.nome);
         linha.detalhe.setText(dataBr(dependente.dataNascimento) + "  ·  " + idade(dependente.dataNascimento));
+        linha.itemView.setOnClickListener(v -> aoTocar.em(dependente));
         linha.itemView.setOnLongClickListener(v -> {
-            aoSegurar.segurou(dependente);
+            aoSegurar.em(dependente);
             return true;
         });
     }

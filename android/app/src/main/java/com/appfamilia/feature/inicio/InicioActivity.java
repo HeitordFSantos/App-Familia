@@ -14,8 +14,12 @@ import com.appfamilia.App;
 import com.appfamilia.R;
 import com.appfamilia.core.rede.Chamada;
 import com.appfamilia.core.rede.Modelos;
+import com.appfamilia.feature.agenda.AgendaActivity;
 import com.appfamilia.feature.auth.LoginActivity;
+import com.appfamilia.feature.compras.ComprasActivity;
 import com.appfamilia.feature.dependentes.DependentesActivity;
+import com.appfamilia.feature.devocional.DevocionalActivity;
+import com.appfamilia.feature.financas.FinancasActivity;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 /** Tela inicial: mostra a Casa, quem faz parte dela e dá acesso aos módulos. */
@@ -35,8 +39,11 @@ public class InicioActivity extends AppCompatActivity {
         textoCasa = findViewById(R.id.texto_casa);
         textoMembros = findViewById(R.id.texto_membros);
 
-        findViewById(R.id.botao_filhos).setOnClickListener(
-                v -> startActivity(new Intent(this, DependentesActivity.class)));
+        abrirAoTocar(R.id.botao_agenda, AgendaActivity.class);
+        abrirAoTocar(R.id.botao_filhos, DependentesActivity.class);
+        abrirAoTocar(R.id.botao_compras, ComprasActivity.class);
+        abrirAoTocar(R.id.botao_financas, FinancasActivity.class);
+        abrirAoTocar(R.id.botao_devocional, DevocionalActivity.class);
 
         Button convidar = findViewById(R.id.botao_convidar);
         convidar.setVisibility(app.sessao().admin() ? View.VISIBLE : View.GONE);
@@ -49,6 +56,10 @@ public class InicioActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         carregarCasa();
+    }
+
+    private void abrirAoTocar(int idDoBotao, Class<?> tela) {
+        findViewById(idDoBotao).setOnClickListener(v -> startActivity(new Intent(this, tela)));
     }
 
     private void carregarCasa() {
