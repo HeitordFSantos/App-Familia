@@ -1,0 +1,14 @@
+services:
+  postgres:
+    image: postgres:17
+    environment:
+      POSTGRES_DB: appfamilia
+      POSTGRES_USER: appfamilia
+      POSTGRES_PASSWORD: appfamilia
+    ports:
+      - "5432:5432"
+    volumes:
+      - appfamilia-dados:/var/lib/postgresql/data
+
+volumes:
+  appfamilia-dados:

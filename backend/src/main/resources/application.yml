@@ -1,0 +1,22 @@
+spring:
+  application:
+    name: app-familia
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/appfamilia}
+    username: ${DB_USUARIO:appfamilia}
+    password: ${DB_SENHA:appfamilia}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate   # o esquema é criado pelo Flyway, o Hibernate só confere
+
+app:
+  jwt:
+    # Em produção, defina JWT_SEGREDO com um valor aleatório de 32+ caracteres.
+    segredo: ${JWT_SEGREDO:troque-este-segredo-de-desenvolvimento-123456}
+    validade-horas: 24
+  google:
+    # "ID do cliente Web" criado no Google Cloud Console. Vazio = login Google desligado.
+    client-id: ${GOOGLE_CLIENT_ID:}
+  convite:
+    validade-dias: 7

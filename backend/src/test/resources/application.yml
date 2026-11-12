@@ -1,0 +1,18 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:teste;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH
+    username: sa
+    password:
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+
+app:
+  jwt:
+    segredo: segredo-somente-para-testes-automatizados-1234
+    validade-horas: 1
+  google:
+    client-id: cliente-de-teste
+  convite:
+    validade-dias: 7
