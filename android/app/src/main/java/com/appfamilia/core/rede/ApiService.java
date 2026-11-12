@@ -89,4 +89,26 @@ public interface ApiService {
 
     @DELETE("api/lancamentos/{id}")
     Call<Void> removerLancamento(@Path("id") String id);
+
+    // ----- Fotos lidas pelo modelo de linguagem -----
+
+    @POST("api/dependentes/{id}/vacinas/foto")
+    Call<List<Modelos.SugestaoVacina>> lerCaderneta(@Path("id") String dependenteId, @Body Modelos.Foto foto);
+
+    @POST("api/compras/foto")
+    Call<List<Modelos.SugestaoCompra>> sugerirCompras(@Body Modelos.Foto foto);
+
+    // ----- Devocional -----
+
+    @GET("api/devocional/hoje")
+    Call<Modelos.DevocionalDia> devocionalDeHoje();
+
+    @GET("api/devocional/plano")
+    Call<Modelos.Plano> planoDevocional();
+
+    @PUT("api/devocional/plano")
+    Call<Modelos.Plano> trocarPlanoDevocional(@Body Modelos.Plano dados);
+
+    @GET("api/devocional/livros")
+    Call<List<Modelos.LivroBiblia>> livrosDaBiblia();
 }

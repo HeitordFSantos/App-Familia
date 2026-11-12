@@ -1,10 +1,14 @@
 package com.appfamilia.feature.vacinas;
 
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
+import androidx.annotation.NonNull;
 import com.appfamilia.core.Formatos;
 import com.appfamilia.core.rede.Chamada;
 import com.appfamilia.core.rede.Modelos;
 import com.appfamilia.core.ui.Linha;
+import com.appfamilia.core.ui.SeletorDeFoto;
 import com.appfamilia.core.ui.TelaLista;
 import com.google.android.material.datepicker.CalendarConstraints;
 import com.google.android.material.datepicker.DateValidatorPointBackward;
@@ -20,6 +24,7 @@ public class VacinasActivity extends TelaLista {
     public static final String EXTRA_NOME = "dependenteNome";
 
     private String dependenteId;
+    private SeletorDeFoto seletorDeFoto;
 
     @Override
     protected void onCreate(Bundle estadoSalvo) {
@@ -27,8 +32,9 @@ public class VacinasActivity extends TelaLista {
         dependenteId = getIntent().getStringExtra(EXTRA_ID);
         setTitle("Vacinas · " + getIntent().getStringExtra(EXTRA_NOME));
         esconderBotaoAdicionar();
+        seletorDeFoto = new SeletorDeFoto(this, this::lerCaderneta);
         definirTopo("Referência: Calendário Nacional de Vacinação da criança. Toque em uma dose para "
-                + "marcar quando foi aplicada. Quem define o que aplicar é a unidade de saúde, com a caderneta.");
+                + "marcar quando foi aplicada, ou use o menu para ler a caderneta por foto. Quem define o que aplicar é a unidade de saúde, com a caderneta.");
     }
 
     @Override
@@ -110,5 +116,97 @@ public class VacinasActivity extends TelaLista {
                 api().marcarVacina(dependenteId, dose.codigo, new Modelos.Aplicacao(Formatos.isoDoSeletor(millis))),
                 depoisRecarregar()));
         seletor.show(getSupportFragmentManager(), "aplicacao");
+    }
+
+    // ----- Caderneta por foto -----
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        menu.add(Menu.NONE, 1, Menu.NONE, "Ler caderneta por foto");
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if (item.getItemId() == 1) {
+            new MaterialAlertDialogBuilder(this)
+                    .setTitle("Ler caderneta por foto")
+                    .setMessage("Fotografe uma página por vez, com boa luz. A foto é enviada ao servidor e ao modelo "
+                            + "de inteligência artificial configurado nele para leitura, e não fica guardada. "
+                            + "Você confere as doses encontradas antes de qualquer coisa ser marcada.")
+                    .setPositiveButton("Continuar", (dialogo, qual) -> seletorDeFoto.abrir())
+                    .setNegativeButton("Cancelar", null)
+                    .show();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    private void lerCaderneta(String fotoBase64) {
+        avisar("Lendo a caderneta… pode levar cerca de um minuto");
+        Chamada.enviar(api().lerCaderneta(dependenteId, new Modelos.Foto(fotoBase64)),
+                new Chamada.Retorno<List<Modelos.SugestaoVacina>>() {
+                    @Override
+                    public void sucesso(List<Modelos.SugestaoVacina> sugestoes) {
+                        if (sugestoes.isEmpty()) {
+                            avisar("Nenhuma dose legível nesta foto. Tente outra, mais nítida, ou marque à mão.");
+                        } else {
+                            conferir(sugestoes);
+                        }
+                    }
+
+                    @Override
+                    public void erro(String mensagem, int status) {
+                        avisar(mensagem);
+                    }
+                });
+    }
+
+    /** Mostra o que o modelo leu. Só o que o usuário deixar marcado é gravado. */
+    private void conferir(List<Modelos.SugestaoVacina> sugestoes) {
+        CharSequence[] textos = new CharSequence[sugestoes.size()];
+        boolean[] escolhidas = new boolean[sugestoes.size()];
+        for (int i = 0; i < sugestoes.size(); i++) {
+            Modelos.SugestaoVacina s = sugestoes.get(i);
+            textos[i] = s.vacina + " · " + s.dose + "\n" + Formatos.dataBr(s.aplicadaEm)
+                    + (s.jaMarcada ? " (já marcada)" : "");
+            escolhidas[i] = !s.jaMarcada;
+        }
+        new MaterialAlertDialogBuilder(this)
+                .setTitle("Confira com a caderneta")
+                .setMultiChoiceItems(textos, escolhidas, (dialogo, qual, marcada) -> escolhidas[qual] = marcada)
+                .setPositiveButton("Marcar selecionadas", (dialogo, qual) -> {
+                    List<Modelos.SugestaoVacina> confirmadas = new ArrayList<>();
+                    for (int i = 0; i < sugestoes.size(); i++) {
+                        if (escolhidas[i]) {
+                            confirmadas.add(sugestoes.get(i));
+                        }
+                    }
+                    marcarEmSequencia(confirmadas, 0);
+                })
+                .setNegativeButton("Cancelar", null)
+                .show();
+    }
+
+    /** Grava uma dose por vez; no fim, recarrega a lista. */
+    private void marcarEmSequencia(List<Modelos.SugestaoVacina> confirmadas, int posicao) {
+        if (posicao >= confirmadas.size()) {
+            carregar();
+            return;
+        }
+        Modelos.SugestaoVacina s = confirmadas.get(posicao);
+        Chamada.enviar(api().marcarVacina(dependenteId, s.codigo, new Modelos.Aplicacao(s.aplicadaEm)),
+                new Chamada.Retorno<Void>() {
+                    @Override
+                    public void sucesso(Void nada) {
+                        marcarEmSequencia(confirmadas, posicao + 1);
+                    }
+
+                    @Override
+                    public void erro(String mensagem, int status) {
+                        avisar(s.vacina + ": " + mensagem);
+                        marcarEmSequencia(confirmadas, posicao + 1);
+                    }
+                });
     }
 }

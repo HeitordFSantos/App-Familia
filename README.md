@@ -18,8 +18,9 @@ App-Familia/
 | Login por e-mail e senha | Pronto | |
 | Login com Google | Código pronto | Criar as credenciais no Google Cloud Console |
 | Agenda e compromissos | Pronto | Editar compromisso (hoje é remover e criar de novo) |
-| Agenda vacinal | Pronto | Revisar o calendário a cada atualização do Ministério da Saúde |
-| Lista de compras | Lista manual compartilhada pronta | Criar itens a partir de foto (precisa de uma API de visão) |
+| Agenda vacinal | Pronto, com leitura da caderneta por foto | Revisar o calendário a cada atualização do Ministério da Saúde; configurar o modelo com visão |
+| Lista de compras | Lista compartilhada e sugestões por foto prontas | Configurar o modelo com visão |
+| Devocional diário | Código pronto: plano da Casa, passagem, reflexão, referências | Configurar o modelo de linguagem, a pesquisa e a licença da tradução |
 | Finanças | Lançamento manual e resumo mensal prontos | Ligação com banco via Open Finance (precisa de um agregador) |
 | Horário do devocional | Bloqueio no Android pronto | Validar em aparelho, principalmente Xiaomi/HyperOS |
 
@@ -53,6 +54,39 @@ mvn test
 | `DB_URL`, `DB_USUARIO`, `DB_SENHA` | Conexão com o PostgreSQL | banco local do docker-compose |
 | `JWT_SEGREDO` | Assina os tokens de sessão (32+ caracteres) | valor de desenvolvimento; **trocar em produção** |
 | `GOOGLE_CLIENT_ID` | ID do cliente Web do Google Cloud Console | vazio (login Google desligado) |
+| `LLM_URL` | Endereço do modelo de linguagem, no formato da API de chat da OpenAI | vazio (devocional e fotos desligados) |
+| `LLM_CHAVE` | Chave do serviço do modelo, se houver | vazio |
+| `LLM_MODELO`, `LLM_MODELO_VISAO` | Nome do modelo de texto e do modelo que lê imagens | `llama3.2`, `llama3.2-vision` |
+| `PESQUISA_URL` | Endereço de uma instância do SearXNG com saída JSON habilitada | vazio (devocional sem referências externas) |
+| `BIBLIA_API_CHAVE`, `BIBLIA_API_VERSAO` | Chave da API.Bible e id da tradução licenciada | vazio (devocional só com a referência) |
+
+### Modelo de linguagem (devocional e fotos)
+
+O backend conversa com qualquer servidor que aceite a API de chat no formato da OpenAI. Para rodar
+Llama no próprio computador com o [Ollama](https://ollama.com):
+
+```bash
+ollama pull llama3.2
+ollama pull llama3.2-vision
+# depois, ao subir o backend:
+LLM_URL=http://localhost:11434/v1 mvn spring-boot:run
+```
+
+Três peças são independentes e cada uma tem um comportamento quando falta:
+
+| Peça | Para que serve | Sem ela |
+|---|---|---|
+| Modelo de linguagem | Escreve a reflexão e lê as fotos | Devocional e fotos respondem que não estão configurados |
+| Pesquisa (SearXNG) | Traz páginas de referência sobre a passagem do dia | Devocional sai sem a seção "Para ler mais" |
+| Texto bíblico (API.Bible) | Entrega o texto exato da tradução licenciada | O app mostra só a referência e pede para ler na Bíblia |
+
+Regras do desenho:
+
+- O texto bíblico nunca é escrito pelo modelo. O modelo escolhe a referência e a fonte licenciada entrega o texto.
+- Das páginas pesquisadas, o app mostra só o título e o link; o modelo é instruído a não copiar frases delas.
+- As fotos são repassadas ao modelo e descartadas. A leitura só gera sugestões; o usuário confirma o que é gravado.
+- A API.Bible libera traduções com direitos autorais conforme o plano da conta e a licença de cada tradução.
+  Antes de publicar o app, confirme que a tradução escolhida pode ser usada no seu caso.
 
 ### Endpoints
 
@@ -77,6 +111,12 @@ mvn test
 | PUT | `/api/compras/{id}/comprado` | logado | Marca ou desmarca como comprado |
 | DELETE | `/api/compras/comprados` | logado | Remove todos os itens já comprados |
 | DELETE | `/api/compras/{id}` | logado | Remove um item |
+| POST | `/api/dependentes/{id}/vacinas/foto` | logado | Lê uma foto da caderneta e sugere doses a marcar |
+| POST | `/api/compras/foto` | logado | Sugere itens a partir de uma foto do armário ou da geladeira |
+| GET | `/api/devocional/hoje` | logado | Devocional do dia (gerado na primeira chamada do dia) |
+| GET | `/api/devocional/plano` | logado | Plano de leitura da Casa |
+| PUT | `/api/devocional/plano` | ADMIN | Troca o plano: livro em sequência ou tema |
+| GET | `/api/devocional/livros` | logado | Livros disponíveis para o plano |
 | GET | `/api/lancamentos?mes=AAAA-MM` | logado | Lançamentos e totais do mês |
 | POST | `/api/lancamentos` | logado | Cria receita ou despesa (valor em centavos) |
 | DELETE | `/api/lancamentos/{id}` | logado | Remove um lançamento |
@@ -97,7 +137,9 @@ com.appfamilia
 ├── vacinas/          calendário vacinal e doses aplicadas
 ├── compras/          lista de compras
 ├── financas/         receitas e despesas
+├── devocional/       plano da Casa, devocional do dia e fonte do texto bíblico
 └── shared/
+    ├── ia/           cliente do modelo de linguagem, pesquisa e foto
     ├── seguranca/    configuração do Spring Security e usuário logado
     └── erro/         formato único de erro
 ```
@@ -160,7 +202,7 @@ com.appfamilia
     ├── agenda/         compromissos e lembretes por notificação
     ├── compras/        lista de compras
     ├── financas/       receitas e despesas do mês
-    └── devocional/     bloqueio de aplicativos em horário definido
+    └── devocional/     devocional do dia, plano e bloqueio de aplicativos em horário definido
 ```
 
 ### Horário do devocional

@@ -18,7 +18,7 @@ import com.appfamilia.feature.agenda.AgendaActivity;
 import com.appfamilia.feature.auth.LoginActivity;
 import com.appfamilia.feature.compras.ComprasActivity;
 import com.appfamilia.feature.dependentes.DependentesActivity;
-import com.appfamilia.feature.devocional.DevocionalActivity;
+import com.appfamilia.feature.devocional.DevocionalHojeActivity;
 import com.appfamilia.feature.financas.FinancasActivity;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
@@ -43,7 +43,7 @@ public class InicioActivity extends AppCompatActivity {
         abrirAoTocar(R.id.botao_filhos, DependentesActivity.class);
         abrirAoTocar(R.id.botao_compras, ComprasActivity.class);
         abrirAoTocar(R.id.botao_financas, FinancasActivity.class);
-        abrirAoTocar(R.id.botao_devocional, DevocionalActivity.class);
+        abrirAoTocar(R.id.botao_devocional, DevocionalHojeActivity.class);
 
         Button convidar = findViewById(R.id.botao_convidar);
         convidar.setVisibility(app.sessao().admin() ? View.VISIBLE : View.GONE);

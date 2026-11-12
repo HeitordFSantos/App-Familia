@@ -1,6 +1,7 @@
 package com.appfamilia.core.rede;
 
 import com.appfamilia.core.Sessao;
+import java.util.concurrent.TimeUnit;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import retrofit2.Retrofit;
@@ -21,6 +22,9 @@ public class Rede {
         String servidor = sessao.servidor();
         if (api == null || !servidor.equals(servidorAtual)) {
             OkHttpClient cliente = new OkHttpClient.Builder()
+                    // Leitura de foto e devocional passam por um modelo de linguagem, que demora
+                    .readTimeout(180, TimeUnit.SECONDS)
+                    .writeTimeout(60, TimeUnit.SECONDS)
                     .addInterceptor(cadeia -> {
                         Request.Builder requisicao = cadeia.request().newBuilder();
                         String token = sessao.token();

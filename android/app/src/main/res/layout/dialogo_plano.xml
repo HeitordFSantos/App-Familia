@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingHorizontal="24dp"
+    android:paddingTop="12dp">
+
+    <RadioGroup
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <RadioButton
+            android:id="@+id/radio_livro"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            android:text="Ler um livro em sequência, um capítulo por dia" />
+
+        <Spinner
+            android:id="@+id/spinner_livro"
+            android:layout_width="match_parent"
+            android:layout_height="48dp" />
+
+        <RadioButton
+            android:id="@+id/radio_tema"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Seguir um tema" />
+    </RadioGroup>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Tema (ex.: gratidão, família)">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/campo_tema"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="textCapSentences" />
+    </com.google.android.material.textfield.TextInputLayout>
+</LinearLayout>

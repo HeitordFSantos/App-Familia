@@ -163,4 +163,68 @@ public final class Modelos {
         public long saldoCentavos;
         public List<Lancamento> itens;
     }
+
+    // ----- Fotos lidas pelo modelo de linguagem -----
+
+    public static class Foto {
+        public String imagemBase64;
+        public String tipo = "image/jpeg";
+
+        public Foto(String imagemBase64) {
+            this.imagemBase64 = imagemBase64;
+        }
+    }
+
+    public static class SugestaoVacina {
+        public String codigo;
+        public String vacina;
+        public String dose;
+        public String aplicadaEm;
+        public boolean jaMarcada;
+    }
+
+    public static class SugestaoCompra {
+        public String nome;
+        /** "acabando" ou "não aparece". */
+        public String motivo;
+    }
+
+    // ----- Devocional -----
+
+    public static class Fonte {
+        public String titulo;
+        public String url;
+    }
+
+    public static class DevocionalDia {
+        public String data;
+        public String referencia;
+        /** Nulo quando o servidor não tem uma tradução licenciada configurada. */
+        public String textoBiblico;
+        public String direitos;
+        public String titulo;
+        public String reflexao;
+        public String aplicacao;
+        public String oracao;
+        public List<Fonte> fontes;
+    }
+
+    public static class Plano {
+        /** LIVRO ou TEMA. */
+        public String tipo;
+        public String valor;
+        public String descricao;
+        public int proximoCapitulo;
+
+        public Plano(String tipo, String valor) {
+            this.tipo = tipo;
+            this.valor = valor;
+        }
+    }
+
+    public static class LivroBiblia {
+        public String codigo;
+        public String nome;
+        public int capitulos;
+    }
 }
