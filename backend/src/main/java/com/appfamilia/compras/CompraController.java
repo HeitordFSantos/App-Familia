@@ -1,5 +1,7 @@
 package com.appfamilia.compras;
 
+import com.appfamilia.compras.perfil.PerfilComprasService;
+import com.appfamilia.compras.perfil.ProdutoCasa.Evento;
 import com.appfamilia.shared.erro.ErroNegocio;
 import com.appfamilia.shared.seguranca.UsuarioAtual;
 import jakarta.validation.Valid;
@@ -22,8 +24,8 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * Lista de compras da Casa. A leitura de foto (armário, geladeira) vai entrar aqui como
- * mais uma forma de criar itens: a foto vira sugestões e o usuário confirma antes de salvar.
+ * Lista de compras da Casa. Adicionar e marcar como comprado alimentam o perfil de compras,
+ * que ajusta as sugestões por foto (CompraFotoController).
  */
 @RestController
 @RequestMapping("/api/compras")
@@ -42,9 +44,11 @@ public class CompraController {
     }
 
     private final ItemCompraRepository itens;
+    private final PerfilComprasService perfil;
 
-    public CompraController(ItemCompraRepository itens) {
+    public CompraController(ItemCompraRepository itens, PerfilComprasService perfil) {
         this.itens = itens;
+        this.perfil = perfil;
     }
 
     @GetMapping
@@ -59,13 +63,18 @@ public class CompraController {
     @Transactional
     public ItemResposta criar(@AuthenticationPrincipal Jwt jwt, @Valid @RequestBody NovoItem dados) {
         String quantidade = dados.quantidade() == null || dados.quantidade().isBlank() ? null : dados.quantidade().trim();
-        return ItemResposta.de(itens.save(new ItemCompra(UsuarioAtual.de(jwt).casaId(), dados.nome().trim(), quantidade)));
+        UUID casaId = UsuarioAtual.de(jwt).casaId();
+        perfil.registrar(casaId, dados.nome(), null, Evento.ADICIONADO);
+        return ItemResposta.de(itens.save(new ItemCompra(casaId, dados.nome().trim(), quantidade)));
     }
 
     @PutMapping("/{id}/comprado")
     @Transactional
     public ItemResposta marcar(@AuthenticationPrincipal Jwt jwt, @PathVariable UUID id, @RequestBody Marcacao dados) {
         ItemCompra item = buscar(jwt, id);
+        if (dados.comprado() && !item.isComprado()) {
+            perfil.registrar(UsuarioAtual.de(jwt).casaId(), item.getNome(), null, Evento.COMPRADO);
+        }
         item.setComprado(dados.comprado());
         return ItemResposta.de(item);
     }

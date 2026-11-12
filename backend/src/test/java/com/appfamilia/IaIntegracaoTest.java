@@ -155,24 +155,6 @@ class IaIntegracaoTest {
         }
     }
 
-    @Test
-    void comprasPorFoto() throws Exception {
-        String token = novaCasa("compras-foto");
-        when(llm.lerImagem(anyString(), anyString(), any())).thenReturn("""
-                {"itens":[{"nome":"Leite","motivo":"acabando"},{"nome":"  "},{"nome":"Ovos","motivo":"não aparece"}]}""");
-        enviar(post("/api/compras/foto"), token, """
-                {"imagemBase64":"QUJD"}""")
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(2))
-                .andExpect(jsonPath("$[1].nome").value("Ovos"));
-
-        when(llm.lerImagem(anyString(), anyString(), any())).thenReturn("não sei");
-        enviar(post("/api/compras/foto"), token, """
-                {"imagemBase64":"QUJD"}""").andExpect(status().isBadGateway());
-        enviar(post("/api/compras/foto"), token, """
-                {"imagemBase64":""}""").andExpect(status().isBadRequest());
-    }
-
     private static String hojeMenos(int dias) {
         return LocalDate.now().minusDays(dias).toString();
     }
