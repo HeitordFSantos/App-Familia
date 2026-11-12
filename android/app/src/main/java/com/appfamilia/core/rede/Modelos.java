@@ -185,8 +185,44 @@ public final class Modelos {
 
     public static class SugestaoCompra {
         public String nome;
-        /** "acabando" ou "não aparece". */
+        /** "acabando", "vocês costumam ter" ou "item básico". */
         public String motivo;
+    }
+
+    /** Resultado da foto: o lugar reconhecido e as sugestões montadas com o histórico da Casa. */
+    public static class AnaliseFoto {
+        public String lugar;
+        public List<SugestaoCompra> sugestoes;
+    }
+
+    /** O que o usuário fez com as sugestões. Os recusados deixam de ser sugeridos com o tempo. */
+    public static class Confirmacao {
+        public String lugar;
+        public List<String> aceitos;
+        public List<String> recusados;
+
+        public Confirmacao(String lugar, List<String> aceitos, List<String> recusados) {
+            this.lugar = lugar;
+            this.aceitos = aceitos;
+            this.recusados = recusados;
+        }
+    }
+
+    public static class ItemHabitual {
+        public String chave;
+        public String nome;
+        public String lugar;
+        public int pontos;
+        public boolean ignorado;
+        public boolean sugerivel;
+    }
+
+    public static class Ignorado {
+        public boolean ignorado;
+
+        public Ignorado(boolean ignorado) {
+            this.ignorado = ignorado;
+        }
     }
 
     // ----- Devocional -----

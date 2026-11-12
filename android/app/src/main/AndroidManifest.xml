@@ -76,6 +76,7 @@
         <activity android:name=".feature.vacinas.VacinasActivity" />
         <activity android:name=".feature.agenda.AgendaActivity" />
         <activity android:name=".feature.compras.ComprasActivity" />
+        <activity android:name=".feature.compras.HabituaisActivity" />
         <activity android:name=".feature.financas.FinancasActivity" />
         <activity android:name=".feature.devocional.DevocionalActivity" />
         <activity android:name=".feature.devocional.DevocionalHojeActivity" />

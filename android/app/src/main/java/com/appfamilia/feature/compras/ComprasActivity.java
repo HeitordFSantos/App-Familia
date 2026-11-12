@@ -1,5 +1,6 @@
 package com.appfamilia.feature.compras;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -100,6 +101,7 @@ public class ComprasActivity extends TelaLista {
     public boolean onCreateOptionsMenu(Menu menu) {
         menu.add(Menu.NONE, 1, Menu.NONE, "Limpar comprados");
         menu.add(Menu.NONE, 2, Menu.NONE, "Sugerir itens por foto");
+        menu.add(Menu.NONE, 3, Menu.NONE, "Itens habituais");
         return true;
     }
 
@@ -109,12 +111,16 @@ public class ComprasActivity extends TelaLista {
             Chamada.enviar(api().limparComprados(), depoisRecarregar());
             return true;
         }
+        if (item.getItemId() == 3) {
+            startActivity(new Intent(this, HabituaisActivity.class));
+            return true;
+        }
         if (item.getItemId() == 2) {
             new MaterialAlertDialogBuilder(this)
                     .setTitle("Sugerir itens por foto")
                     .setMessage("Fotografe o armário ou a geladeira aberta. A foto é enviada ao servidor e ao modelo "
                             + "de inteligência artificial configurado nele, e não fica guardada. O modelo só vê o que "
-                            + "aparece na foto: confira as sugestões antes de adicionar.")
+                            + "aparece na foto: confira as sugestões antes de adicionar. O que você desmarcar deixa de ser sugerido com o tempo.")
                     .setPositiveButton("Continuar", (dialogo, qual) -> seletorDeFoto.abrir())
                     .setNegativeButton("Cancelar", null)
                     .show();
@@ -128,13 +134,13 @@ public class ComprasActivity extends TelaLista {
     private void sugerirPorFoto(String fotoBase64) {
         avisar("Analisando a foto… pode levar cerca de um minuto");
         Chamada.enviar(api().sugerirCompras(new Modelos.Foto(fotoBase64)),
-                new Chamada.Retorno<List<Modelos.SugestaoCompra>>() {
+                new Chamada.Retorno<Modelos.AnaliseFoto>() {
                     @Override
-                    public void sucesso(List<Modelos.SugestaoCompra> sugestoes) {
-                        if (sugestoes.isEmpty()) {
-                            avisar("Nenhuma sugestão para esta foto");
+                    public void sucesso(Modelos.AnaliseFoto analise) {
+                        if (analise.sugestoes == null || analise.sugestoes.isEmpty()) {
+                            avisar("Nada a sugerir nesta foto");
                         } else {
-                            escolher(sugestoes);
+                            escolher(analise);
                         }
                     }
 
@@ -145,7 +151,12 @@ public class ComprasActivity extends TelaLista {
                 });
     }
 
-    private void escolher(List<Modelos.SugestaoCompra> sugestoes) {
+    /**
+     * Mostra as sugestões já marcadas. O que ficar marcado entra na lista; o que for
+     * desmarcado conta como recusa e tende a não ser sugerido de novo. Cancelar não registra nada.
+     */
+    private void escolher(Modelos.AnaliseFoto analise) {
+        List<Modelos.SugestaoCompra> sugestoes = analise.sugestoes;
         CharSequence[] textos = new CharSequence[sugestoes.size()];
         boolean[] escolhidos = new boolean[sugestoes.size()];
         for (int i = 0; i < sugestoes.size(); i++) {
@@ -155,39 +166,18 @@ public class ComprasActivity extends TelaLista {
             escolhidos[i] = true;
         }
         new MaterialAlertDialogBuilder(this)
-                .setTitle("Adicionar à lista?")
+                .setTitle(HabituaisActivity.nomeDoLugar(analise.lugar) + ": adicionar à lista?")
                 .setMultiChoiceItems(textos, escolhidos, (dialogo, qual, marcado) -> escolhidos[qual] = marcado)
-                .setPositiveButton("Adicionar selecionados", (dialogo, qual) -> {
-                    List<String> nomes = new ArrayList<>();
+                .setPositiveButton("Confirmar", (dialogo, qual) -> {
+                    List<String> aceitos = new ArrayList<>();
+                    List<String> recusados = new ArrayList<>();
                     for (int i = 0; i < sugestoes.size(); i++) {
-                        if (escolhidos[i]) {
-                            nomes.add(sugestoes.get(i).nome);
-                        }
+                        (escolhidos[i] ? aceitos : recusados).add(sugestoes.get(i).nome);
                     }
-                    adicionarEmSequencia(nomes, 0);
+                    Chamada.enviar(api().confirmarSugestoes(
+                            new Modelos.Confirmacao(analise.lugar, aceitos, recusados)), depoisRecarregar());
                 })
                 .setNegativeButton("Cancelar", null)
                 .show();
-    }
-
-    /** Adiciona um item por vez; no fim, recarrega a lista. */
-    private void adicionarEmSequencia(List<String> nomes, int posicao) {
-        if (posicao >= nomes.size()) {
-            carregar();
-            return;
-        }
-        Chamada.enviar(api().criarItemCompra(new Modelos.ItemCompra(nomes.get(posicao), null)),
-                new Chamada.Retorno<Modelos.ItemCompra>() {
-                    @Override
-                    public void sucesso(Modelos.ItemCompra criado) {
-                        adicionarEmSequencia(nomes, posicao + 1);
-                    }
-
-                    @Override
-                    public void erro(String mensagem, int status) {
-                        avisar(mensagem);
-                        adicionarEmSequencia(nomes, posicao + 1);
-                    }
-                });
     }
 }

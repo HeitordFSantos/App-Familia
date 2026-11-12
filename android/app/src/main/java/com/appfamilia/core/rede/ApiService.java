@@ -96,7 +96,16 @@ public interface ApiService {
     Call<List<Modelos.SugestaoVacina>> lerCaderneta(@Path("id") String dependenteId, @Body Modelos.Foto foto);
 
     @POST("api/compras/foto")
-    Call<List<Modelos.SugestaoCompra>> sugerirCompras(@Body Modelos.Foto foto);
+    Call<Modelos.AnaliseFoto> sugerirCompras(@Body Modelos.Foto foto);
+
+    @POST("api/compras/foto/confirmar")
+    Call<List<Modelos.ItemCompra>> confirmarSugestoes(@Body Modelos.Confirmacao dados);
+
+    @GET("api/compras/habituais")
+    Call<List<Modelos.ItemHabitual>> habituais();
+
+    @PUT("api/compras/habituais/{chave}/ignorado")
+    Call<Modelos.ItemHabitual> ignorarHabitual(@Path("chave") String chave, @Body Modelos.Ignorado dados);
 
     // ----- Devocional -----
 

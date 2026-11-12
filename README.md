@@ -19,7 +19,7 @@ App-Familia/
 | Login com Google | Código pronto | Criar as credenciais no Google Cloud Console |
 | Agenda e compromissos | Pronto | Editar compromisso (hoje é remover e criar de novo) |
 | Agenda vacinal | Pronto, com leitura da caderneta por foto | Revisar o calendário a cada atualização do Ministério da Saúde; configurar o modelo com visão |
-| Lista de compras | Lista compartilhada e sugestões por foto prontas | Configurar o modelo com visão |
+| Lista de compras | Lista compartilhada e sugestões por foto que aprendem com a Casa | Configurar o modelo com visão |
 | Devocional diário | Código pronto: plano da Casa, passagem, reflexão, referências | Configurar o modelo de linguagem, a pesquisa e a licença da tradução |
 | Finanças | Lançamento manual e resumo mensal prontos | Ligação com banco via Open Finance (precisa de um agregador) |
 | Horário do devocional | Bloqueio no Android pronto | Validar em aparelho, principalmente Xiaomi/HyperOS |
@@ -112,7 +112,10 @@ Regras do desenho:
 | DELETE | `/api/compras/comprados` | logado | Remove todos os itens já comprados |
 | DELETE | `/api/compras/{id}` | logado | Remove um item |
 | POST | `/api/dependentes/{id}/vacinas/foto` | logado | Lê uma foto da caderneta e sugere doses a marcar |
-| POST | `/api/compras/foto` | logado | Sugere itens a partir de uma foto do armário ou da geladeira |
+| POST | `/api/compras/foto` | logado | Reconhece o lugar da foto e sugere itens com base no perfil da Casa |
+| POST | `/api/compras/foto/confirmar` | logado | Grava a conferência: aceitos entram na lista, recusados perdem pontos |
+| GET | `/api/compras/habituais` | logado | Produtos conhecidos pela Casa, com pontuação |
+| PUT | `/api/compras/habituais/{chave}/ignorado` | logado | Liga ou desliga as sugestões de um produto |
 | GET | `/api/devocional/hoje` | logado | Devocional do dia (gerado na primeira chamada do dia) |
 | GET | `/api/devocional/plano` | logado | Plano de leitura da Casa |
 | PUT | `/api/devocional/plano` | ADMIN | Troca o plano: livro em sequência ou tema |
@@ -143,6 +146,30 @@ com.appfamilia
     ├── seguranca/    configuração do Spring Security e usuário logado
     └── erro/         formato único de erro
 ```
+
+### Lista de compras que aprende
+
+Duas tabelas sustentam as sugestões:
+
+- `produto_comum`: catálogo base com cerca de 100 produtos comuns no Brasil, cada um com o lugar
+  onde costuma ficar (geladeira, freezer, armário, limpeza, higiene) e a marca de "básico".
+  É o que vale para uma Casa que ainda não tem histórico.
+- `produto_casa`: o histórico de cada Casa, com contadores por produto.
+
+Pontuação de um produto: 1 se for básico, mais o histórico da Casa.
+
+| Evento | Pontos |
+|---|---|
+| Aparece numa foto | +1 |
+| Entra na lista | +2 |
+| É marcado como comprado | +3 |
+| É desmarcado nas sugestões | −3 |
+
+Um básico é sugerido com 1 ponto ou mais; um produto fora do catálogo precisa de 2, ou seja,
+de algum uso. Na foto, o modelo só diz que lugar é e o que aparece (e se está acabando). A lista
+sugerida é montada pelo backend: primeiro o que está acabando, depois o que a Casa costuma ter
+naquele lugar e não apareceu, sem repetir o que já está na lista. Cancelar a conferência não
+conta como recusa. Para mudar os pesos, veja `compras/perfil/ProdutoCasa.java`.
 
 ### Agenda vacinal
 
