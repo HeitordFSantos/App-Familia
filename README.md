@@ -7,7 +7,7 @@ Secretária digital para a administração de uma casa: agenda e compromissos, a
 ```
 App-Familia/
 ├── backend/   API em Java 21 + Spring Boot + PostgreSQL
-└── android/   App Android em Java (a criar)
+└── android/   App Android em Java (XML + MVVM)
 ```
 
 ## Estado atual
@@ -17,7 +17,7 @@ App-Familia/
 | Núcleo: Casa, Membro, Dependente, Convite | Pronto |
 | Login por e-mail e senha | Pronto |
 | Login com Google (lado do servidor) | Pronto; falta configurar o client-id |
-| App Android | A fazer |
+| App Android: login, cadastro, início, filhos, convite | Pronto |
 | Agenda e compromissos | A fazer |
 | Agenda vacinal | A fazer |
 | Bloqueio para o devocional | A fazer |
@@ -88,3 +88,43 @@ Regras que valem para todo módulo novo:
 - O `casa_id` vem sempre do token (`UsuarioAtual`), nunca do corpo da requisição.
 - Um módulo não depende de outro; todos dependem só de `core` e `shared`.
 - Serviços externos (Google, banco, IA) ficam atrás de uma interface.
+
+## App Android
+
+Java, telas em XML, Retrofit para a API. A cada envio para o GitHub, o fluxo **Android** (aba Actions) gera o APK de depuração como artefato `app-familia-debug`. O APK é sempre assinado com a mesma chave, então uma versão nova instala por cima da anterior.
+
+Para gerar na sua máquina:
+
+```bash
+cd android
+./gradlew assembleDebug      # no Windows: gradlew.bat assembleDebug
+```
+
+O APK sai em `android/app/build/outputs/apk/debug/app-debug.apk`.
+
+### Ligando o app ao backend
+
+O app precisa alcançar o backend pela rede. Enquanto o backend roda no seu computador:
+
+1. Celular e computador na mesma rede Wi-Fi.
+2. Descubra o IP do computador (`ipconfig` no Windows), por exemplo `192.168.0.10`.
+3. Na tela de login do app, toque em **Servidor** e informe `192.168.0.10:8080`.
+4. Se não conectar, libere a porta 8080 no firewall do Windows.
+
+### Login com Google
+
+O botão só aparece quando `googleClientId` está preenchido em `android/gradle.properties`. O mesmo valor vai na variável `GOOGLE_CLIENT_ID` do backend. É preciso criar no Google Cloud Console um cliente OAuth do tipo **Web** (esse é o ID usado) e um do tipo **Android** com o pacote `com.appfamilia` e o SHA-1 da chave `android/app/debug.keystore`.
+
+### Organização do código
+
+```
+com.appfamilia
+├── App.java            objetos únicos: sessão e acesso à API
+├── core/
+│   ├── Sessao.java     token, usuário e endereço do servidor
+│   └── rede/           Retrofit, modelos e tratamento de erro
+└── feature/
+    ├── auth/           login, cadastro, Google
+    ├── inicio/         tela inicial e convite
+    └── dependentes/    filhos
+```

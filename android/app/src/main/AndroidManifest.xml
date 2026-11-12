@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <!-- usesCleartextTraffic permite http:// durante o desenvolvimento (backend no computador).
+         Antes de publicar, o backend deve usar https e esta opção deve sair. -->
+    <application
+        android:name=".App"
+        android:allowBackup="false"
+        android:icon="@drawable/ic_app"
+        android:label="@string/app_nome"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.AppFamilia"
+        android:usesCleartextTraffic="true">
+
+        <activity
+            android:name=".feature.auth.LoginActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".feature.auth.CadastroActivity"
+            android:label="Criar conta" />
+
+        <activity android:name=".feature.inicio.InicioActivity" />
+
+        <activity
+            android:name=".feature.dependentes.DependentesActivity"
+            android:label="Filhos" />
+    </application>
+</manifest>
